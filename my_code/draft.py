@@ -63,6 +63,8 @@ anno_paths = glob.glob(raw_data_path + '*/*.xml')
 # img_paths.extend(glob.glob(raw_data_path + '/*.png'))
 for k in list(CLASS_DICT.keys()):
     categories.append({"id": CLASS_DICT[k], "name":k})
+m_list = []
+s_list = []
 for ip in tqdm(anno_paths):
     file_name, w, h, segmented, annos = read_xml(ip, img_id)
     images.append({'file_name':file_name,
