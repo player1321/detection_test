@@ -7,6 +7,7 @@ import random
 import sys
 import os
 import numpy as np
+import cv2
 
 CLASS_DICT = collections.OrderedDict({
 'mask':1,
@@ -18,7 +19,7 @@ CLASS_DICT = collections.OrderedDict({
 def read_xml(xml_file, img_id):
     tree = ET.parse(xml_file)
     root = tree.getroot()
-    file_name = root.find('path').text
+    file_name = root.find('filename').text
     width = int(root.find('size').find('width').text)
     height = int(root.find('size').find('height').text)
     segmented = int(root.find('segmented').text)
@@ -58,23 +59,25 @@ raw_data_path = sys.argv[1]
 anno_save_path = sys.argv[1] + '/my_dataset/annotations'
 if not os.path.exists(anno_save_path):
     os.makedirs(anno_save_path)
-anno_paths = glob.glob(raw_data_path + '*/*.xml')
+anno_paths = glob.glob(raw_data_path + '/*/*.xml')
 # img_paths = glob.glob(raw_data_path + '/*.jpg')
 # img_paths.extend(glob.glob(raw_data_path + '/*.png'))
 for k in list(CLASS_DICT.keys()):
     categories.append({"id": CLASS_DICT[k], "name":k})
 m_list = []
 s_list = []
-for ip in tqdm(anno_paths):
+# for ip in tqdm(anno_paths):
+for ip in anno_paths:
     file_name, w, h, segmented, annos = read_xml(ip, img_id)
+    file_name = ip.split('/')[-2] + '/' + file_name
     images.append({'file_name':file_name,
                     'id':img_id,
                     'height':h,
                     'width':w})
     annotations.extend(annos)
     img_id += 1
-
-    img = cv2.imread(file_name)
+#     import pdb;pdb.set_trace()
+    img = cv2.imread(raw_data_path + '/' + file_name)
     img = img / 255.0
     m, s = cv2.meanStdDev(img)
     m_list.append(m.reshape((3,)))
@@ -86,7 +89,7 @@ s = s_array.mean(axis=0, keepdims=True)
 img_info = {}
 img_info['mean'] = m[0][::-1].tolist()
 img_info['std'] = s[0][::-1].tolist()
-with open(anno_save_path+'img_info.json', 'w') as json_f3:          
+with open(anno_save_path+'/img_info.json', 'w') as json_f3:          
     json.dump(img_info, json_f3)
 all_anns = {"images": images, "annotations":annotations, "categories":categories}
 # #store all annotations
@@ -97,7 +100,7 @@ print('spliting dataset')
 length = len(all_anns["images"])
 rd_idx = list(range(length))
 random.shuffle(rd_idx)
-print(rd_idx)
+# print(rd_idx)
 rate = 0.8
 train_idx = rd_idx[:int(length*0.8)]
 val_idx = rd_idx[int(length*0.8):]
@@ -119,7 +122,7 @@ val_cat = all_anns["categories"]
 
 train_anns = {"images": train_images, "annotations":train_annotations, "categories":train_cat} 
 val_anns = {"images": val_images, "annotations":val_annotations, "categories":val_cat}
-with open(anno_save_path+'train.json', 'w') as json_f4:          
+with open(anno_save_path+'/train.json', 'w') as json_f4:          
     json.dump(train_anns, json_f4)       
-with open(anno_save_path + 'val.json', 'w') as json_f5:          
+with open(anno_save_path + '/val.json', 'w') as json_f5:          
     json.dump(val_anns, json_f5)
