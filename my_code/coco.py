@@ -26,7 +26,7 @@ class COCO(data.Dataset):
     if split == 'test':
       self.annot_path = os.path.join(
           self.data_dir, 'annotations', 
-          'image_info_test-dev2017.json').format(split)
+          '{}.json').format(split)
     else:
       if opt.task == 'exdet':
         self.annot_path = os.path.join(
@@ -35,7 +35,7 @@ class COCO(data.Dataset):
       else:
         self.annot_path = os.path.join(
           self.data_dir, 'annotations', 
-          'instances_{}2017.json').format(split)
+          '{}.json').format(split)
     self.max_objs = 128
     self.class_name = [
       '__background__', 'mask', 'head', 'back', 'mid_mask']
